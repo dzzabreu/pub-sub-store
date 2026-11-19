@@ -20,11 +20,24 @@ async function updateReport(products) {
 async function printReport() {
     for (const [key, value] of Object.entries(report)) {
         console.log(`${key} = ${value} sales`);
-      }
+    }
+}
+
+async function processMessage(msg) {
+    const deliveryData = JSON.parse(msg.content)
+    try {
+        if (deliveryData && deliveryData.products) {
+            await updateReport(deliveryData.products)
+            await printReport()
+        }
+    } catch (error) {
+        console.log(`X ERROR TO PROCESS: ${error}`)
+    }
 }
 
 async function consume() {
-    //TODO: Constuir a comunicação com a fila 
+    console.log(`SUCCESSFULLY SUBSCRIBED TO QUEUE: report`)
+    await (await RabbitMQService.getInstance()).consume('report', (msg) => { processMessage(msg) })
 } 
 
 consume()
